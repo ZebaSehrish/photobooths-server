@@ -20,12 +20,22 @@ async function run() {
         const reviewCollection = client.db('photoBooths').collection('reviews');
 
         //service api
+        // app.get('/services', async (req, res) => {
+        //     const query = {}
+        //     const cursor = serviceCollection.find(query);
+        //     const services = await cursor.limit(3).toArray();
+        //     res.send(services);
+        // });
         app.get('/services', async (req, res) => {
-            const query = {}
+            // const page = parseInt(req.query.page);
+            // const size = parseInt(req.query.size);
+            // console.log(page, size);
+            const query = {};
             const cursor = serviceCollection.find(query);
             const services = await cursor.toArray();
-            res.send(services);
-        });
+            const count = await serviceCollection.estimatedDocumentCount();
+            res.send({ count, services });
+        })
 
         app.get('/services/:id', async (req, res) => {
             const id = req.params.id;
@@ -47,6 +57,11 @@ async function run() {
             if (req.query.email) {
                 query = {
                     email: req.query.email
+                }
+            }
+            else if (req.query.service) {
+                query = {
+                    service: req.query.service
                 }
             }
             const cursor = reviewCollection.find(query);
