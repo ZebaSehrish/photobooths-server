@@ -35,6 +35,7 @@ async function run() {
 
         const reviewCollection = client.db('photoBooths').collection('reviews');
 
+        //jwt
         app.post('/jwt', (req, res) => {
             const user = req.body;
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1hr' });
@@ -42,19 +43,21 @@ async function run() {
         })
 
         //service api
-        // app.get('/services', async (req, res) => {
-        //     const query = {}
-        //     const cursor = serviceCollection.find(query);
-        //     const services = await cursor.limit(3).toArray();
-        //     res.send(services);
-        // });
+
         app.get('/services', async (req, res) => {
             const query = {};
             const cursor = serviceCollection.find(query);
             const services = await cursor.toArray();
             const count = await serviceCollection.estimatedDocumentCount();
             res.send({ count, services });
-        })
+        });
+
+        app.get('/homeServices', async (req, res) => {
+            const query = {}
+            const cursor = serviceCollection.find(query);
+            const services = await cursor.limit(3).toArray();
+            res.send(services);
+        });
 
         app.get('/services/:id', async (req, res) => {
             const id = req.params.id;
@@ -94,12 +97,7 @@ async function run() {
             res.send(result);
         });
 
-        app.get('/reviews/:id', verifyJWT, async (req, res) => {
-            const decoded = req.decoded;
-            console.log('inside orders api', decoded);
-            if (decoded.email !== req.query.email) {
-                res.status(403).send({ message: 'unauthorized access' });
-            }
+        app.get('/reviews/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await reviewCollection.findOne(query);
